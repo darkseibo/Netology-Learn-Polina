@@ -1,0 +1,47 @@
+---
+- name: Download and extract Apache Kafka archive
+  hosts: all
+  become: yes
+  vars:
+    kafka_url: "https://downloads.apache.org/kafka/3.9.2/kafka_2.13-3.9.2.tgz"
+    download_dir: "/tmp"
+    extract_dir: "/opt/kafka"
+    archive_name: "kafka_2.13-3.9.2.tgz"
+
+  tasks:
+    - name: Ensure download directory exists
+      file:
+        path: "{{ download_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Download Kafka archive
+      get_url:
+        url: "{{ kafka_url }}"
+        dest: "{{ download_dir }}/{{ archive_name }}"
+        timeout: 60
+        validate_certs: yes
+      register: download_result
+      until: download_result is succeeded
+      retries: 3
+      delay: 5
+
+    - name: Create extraction directory
+      file:
+        path: "{{ extract_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Extract Kafka archive
+      unarchive:
+        src: "{{ download_dir }}/{{ archive_name }}"
+        dest: "{{ extract_dir }}"
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+      notify: cleanup_archive
+
+  handlers:
+    - name: cleanup_archive
+      file:
+        path: "{{ download_dir }}/{{ archive_name }}"
+        state: absent

@@ -1,0 +1,23 @@
+---
+- name: Update MOTD
+  hosts: all
+  become: yes
+  vars:
+    custom_motd: |
+      # Добро пожаловать, системный администратор!
+      #
+      # Hostname: {{ ansible_hostname }}
+      # IP Address: {{ ansible_default_ipv4.address | default('Unknown', true) }}
+      #
+      # Хорошего дня!
+
+  tasks:
+    - name: Gather facts 
+      setup:
+        filter: "ansible_default_ipv4,ansible_hostname"
+
+    - name: Write custom MOTD to /etc/motd
+      copy:
+        content: "{{ custom_motd }}"
+        dest: /etc/motd
+        mode: '0644'

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Info</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .info { background: #f4f4f4; padding: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>System Information for {{ ansible_hostname }}</h1>
+    <div class="info">
+        <p><strong>Hostname:</strong> {{ ansible_hostname }}</p>
+        <p><strong>IP Address:</strong> {{ ansible_default_ipv4.address | default('N/A') }}</p>
+        <p><strong>CPU:</strong> {{ ansible_processor_count }} x {{ ansible_processor | last }} (total cores: {{ ansible_processor_cores }})</p>
+        <p><strong>RAM:</strong> {{ (ansible_memtotal_mb / 1024) | round(2, 'common') }} GB</p>
+        {% if ansible_devices %}
+            {% set first_disk = ansible_devices | select('match', '^sd|^hd|^vd') | first | default(none) %}
+            {% if first_disk %}
+                <p><strong>First HDD:</strong> {{ first_disk }} - {{ (ansible_devices[first_disk].size | replace(' GiB', '') | float * 1024) | int }} MB</p>
+            {% else %}
+                <p><strong>First HDD:</strong> N/A</p>
+            {% endif %}
+        {% else %}
+            <p><strong>First HDD:</strong> N/A</p>
+        {% endif %}
+        <p><strong>OS:</strong> Debian {{ ansible_distribution_version }}</p>
+    </div>
+</body>
+</html>

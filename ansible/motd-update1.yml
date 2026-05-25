@@ -1,0 +1,14 @@
+---
+- name: Update MOTD using variable
+  hosts: all
+  become: yes
+  vars:
+    custom_motd: |
+      # добро пожаловать на 192.168.3.46!
+
+  tasks:
+    - name: Write custom MOTD to /etc/motd
+      copy:
+        content: "{{ custom_motd }}"
+        dest: /etc/motd
+        mode: '0644'

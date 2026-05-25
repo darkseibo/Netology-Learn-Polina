@@ -1,0 +1,7 @@
+---
+- name: Deploy and configure Apache server with system info (Debian)
+  hosts: all
+  become: yes
+
+  roles:
+    - apache_server

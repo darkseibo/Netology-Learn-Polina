@@ -1,0 +1,30 @@
+---
+- name: Gather all facts
+  setup:
+
+- name: Install Apache web server
+  apt:
+    name: "{{ apache_package }}"
+    state: present
+    update_cache: yes
+
+- name: Ensure Apache is enabled and started
+  systemd:
+    name: "{{ apache_service }}"
+    enabled: yes
+    state: started
+
+- name: Render index.html from template
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+  notify: restart apache
+
+- name: Verify website is available
+  uri:
+    url: "http://{{ ansible_default_ipv4.address | default('127.0.0.1') }}:{{ web_port }}"
+    method: GET
+  register: web_check
+  until: web_check.status == 200
+  retries: 10
+  delay: 5
